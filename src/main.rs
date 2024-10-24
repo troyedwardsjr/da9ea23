@@ -12,6 +12,7 @@ struct Movie {
 }
 
 type ID = String;
+
 // HashMaps mocking database
 static mut MOVIES: Lazy<HashMap<ID, Movie>> = Lazy::new(|| {
     let mut m = HashMap::new();
@@ -32,12 +33,9 @@ static mut MOVIES: Lazy<HashMap<ID, Movie>> = Lazy::new(|| {
 
 #[tokio::main]
 async fn main() {
-    // build our application with a single route
     let app = Router::new()
         .route("/movie/:id", get(get_movie))
         .route("/movie", post(post_movie));
-
-    // run our app with hyper, listening globally on port 3000
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     axum::serve(listener, app).await.unwrap();
 }
@@ -58,7 +56,6 @@ async fn post_movie(Json(payload): Json<Movie>) -> Result<StatusCode, StatusCode
     if payload.id.is_empty() {
         return Err(StatusCode::BAD_REQUEST);
     }
-    // Insert the movie into the HashMap
     unsafe {
         MOVIES.insert(payload.id.clone(), Movie {
             id: payload.id.clone(),
